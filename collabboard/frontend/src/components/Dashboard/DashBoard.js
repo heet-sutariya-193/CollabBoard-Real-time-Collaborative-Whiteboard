@@ -22,6 +22,13 @@ const Dashboard = () => {
         loadSavedBoards();
     }, [navigate]);
 
+    const handleLogout = () => {
+        // Clear user data from localStorage
+        localStorage.removeItem('user');
+        // Redirect to auth page
+        navigate('/auth');
+    };
+
     const loadSavedBoards = () => {
         const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
         setSavedBoards(boards);
@@ -91,6 +98,25 @@ const Dashboard = () => {
     }
 
     return (
+         <div className="dashboard-container">
+            <header className="dashboard-header">
+                <div className="container">
+                    <div className="header-content">
+                        <div className="header-left">
+                            <h1>Welcome back, {user?.username}!</h1>
+                            <p>Start a new whiteboard or continue where you left off</p>
+                        </div>
+                        <div className="header-right">
+                            <button 
+                                onClick={handleLogout}
+                                className="btn btn-secondary logout-btn"
+                            >
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="container">
@@ -185,5 +211,6 @@ const Dashboard = () => {
         </div>
     );
 };
+
 
 export default Dashboard;
