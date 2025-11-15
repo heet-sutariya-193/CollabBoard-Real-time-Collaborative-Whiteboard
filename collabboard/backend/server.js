@@ -8,13 +8,25 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://collabboard-real-time-collaborative-thjg.onrender.com", 
+      "https://collabboard-real-time-collaborative.onrender.com"
+    ],
+    
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000", 
+    "https://collabboard-real-time-collaborative-thjg.onrender.com", 
+    "https://collabboard-real-time-collaborative.onrender.com"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // In-memory storage (for testing)
@@ -185,4 +197,5 @@ server.listen(PORT, () => {
     console.log(`🚀 Simple Server running on http://localhost:${PORT}`);
     console.log(`📊 API Health check: http://localhost:${PORT}/api/health`);
     console.log(`💾 Using in-memory storage (no MongoDB required)`);
+
 });
