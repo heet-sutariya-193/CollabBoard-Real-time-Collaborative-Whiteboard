@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://collabboard-real-time-collaborative.onrender.com/api';
 
 export const api = {
     async get(endpoint) {
@@ -34,4 +34,5 @@ export const api = {
         });
         return response.json();
     }
+
 };
