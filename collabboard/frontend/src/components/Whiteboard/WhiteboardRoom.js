@@ -23,7 +23,7 @@ const WhiteboardRoom = () => {
 
     useEffect(() => {
         // Connect to Socket.io
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io('https://collabboard-real-time-collaborative.onrender.com');
         setSocket(newSocket);
 
         // Join room
@@ -317,5 +317,6 @@ const WhiteboardRoom = () => {
         </div>
     );
 };
+
 
 export default WhiteboardRoom;
