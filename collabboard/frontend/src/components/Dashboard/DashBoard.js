@@ -98,7 +98,7 @@ const Dashboard = () => {
     }
 
     return (
-         <div className="dashboard-container">
+          <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="container">
                     <div className="header-content">
@@ -120,7 +120,7 @@ const Dashboard = () => {
         <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="container">
-                    <h1>Welcome back, {user.username}!</h1>
+                    <h1>Welcome , {user.username}!</h1>
                     <p>Start a new whiteboard or continue where you left off</p>
                 </div>
             </header>
@@ -214,3 +214,4 @@ const Dashboard = () => {
 
 
 export default Dashboard;
+
