@@ -17,15 +17,11 @@ const Dashboard = () => {
         } else {
             navigate('/auth');
         }
-
-        // Load saved boards
         loadSavedBoards();
     }, [navigate]);
 
     const handleLogout = () => {
-        // Clear user data from localStorage
         localStorage.removeItem('user');
-        // Redirect to auth page
         navigate('/auth');
     };
 
@@ -43,11 +39,9 @@ const Dashboard = () => {
             
             if (response.success) {
                 const roomCode = response.roomCode;
-                // Join the room after creating it
                 await api.post(`/whiteboards/${roomCode}/join`, {
                     username: user?.username || 'Anonymous'
                 });
-                
                 navigate(`/whiteboard/${roomCode}`);
             }
         } catch (error) {
@@ -73,7 +67,7 @@ const Dashboard = () => {
                 }
             } catch (error) {
                 console.error('Error joining whiteboard:', error);
-                alert('Room not found. Please check the room code and ensure backend is running.');
+                alert('Room not found. Please check the room code.');
             }
         }
     };
@@ -85,8 +79,6 @@ const Dashboard = () => {
     };
 
     const openSavedBoard = (board) => {
-        // For saved boards, we'll navigate to a new room or show the image
-        // For now, we'll just show an alert with options
         const shouldOpen = window.confirm(`Open board "${board.name}" in a new room?`);
         if (shouldOpen) {
             createNewWhiteboard();
@@ -98,12 +90,12 @@ const Dashboard = () => {
     }
 
     return (
-          <div className="dashboard-container">
+        <div className="dashboard-container">
             <header className="dashboard-header">
                 <div className="container">
                     <div className="header-content">
                         <div className="header-left">
-                            <h1>Welcome back, {user?.username}!</h1>
+                            <h1>Welcome back, {user.username}!</h1>
                             <p>Start a new whiteboard or continue where you left off</p>
                         </div>
                         <div className="header-right">
@@ -115,13 +107,6 @@ const Dashboard = () => {
                             </button>
                         </div>
                     </div>
-                </div>
-            </header>
-        <div className="dashboard-container">
-            <header className="dashboard-header">
-                <div className="container">
-                    <h1>Welcome , {user.username}!</h1>
-                    <p>Start a new whiteboard or continue where you left off</p>
                 </div>
             </header>
 
@@ -212,6 +197,4 @@ const Dashboard = () => {
     );
 };
 
-
 export default Dashboard;
-
