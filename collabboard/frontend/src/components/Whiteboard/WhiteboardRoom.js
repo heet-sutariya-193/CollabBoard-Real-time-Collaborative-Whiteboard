@@ -122,6 +122,12 @@ const WhiteboardRoom = () => {
         return false;
     };
 
+    const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/auth');
+    };
+
+
     // Undo functionality
     const undo = () => {
         if (drawingHistory.length > 1) {
@@ -277,15 +283,21 @@ const WhiteboardRoom = () => {
                     onClick={() => navigate('/dashboard')}
                     className="btn btn-secondary"
                 >
-                    ← Back
+                    ← Dashboard
                 </button>
                 <h2>Room: {roomId}</h2>
             </div>
             <div className="header-right">
+                <button 
+                    onClick={handleLogout}
+                    className="btn btn-secondary logout-btn"
+                    style={{marginRight: '10px'}}
+                >
+                    🚪 Logout
+                </button>
                 <UserList users={roomUsers} />
             </div>
         </header>
-
             <div className="whiteboard-content">
                 <div className="tools-section">
                     <Toolbar
@@ -320,3 +332,4 @@ const WhiteboardRoom = () => {
 
 
 export default WhiteboardRoom;
+
