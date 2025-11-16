@@ -183,6 +183,21 @@
     font-size: 14px;
 }
 
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.logout-btn:hover {
+    background: #dc2626;
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
     .whiteboard-content {
@@ -245,4 +260,5 @@
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr auto;
     }
+
 }
