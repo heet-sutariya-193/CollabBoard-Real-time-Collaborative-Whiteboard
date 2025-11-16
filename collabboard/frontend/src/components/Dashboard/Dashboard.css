@@ -155,209 +155,232 @@
     background: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #e5e7eb;
 }
 
 .section-title {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f3f4f6;
 }
 
 .section-title h2 {
     margin: 0;
     color: #1f2937;
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
 }
 
 .count-badge {
-    background: #e5e7eb;
-    color: #6b7280;
+    background: #3b82f6;
+    color: white;
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* Boards Grid - Compact Design */
+/* Boards Grid */
 .boards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
 }
 
 .board-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
     background: white;
-    transition: transform 0.2s;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .board-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.board-preview {
-    height: 120px;
-    background: #f3f4f6;
+/* Board Image Container */
+.board-image-container {
+    position: relative;
+    width: 100%;
+    height: 180px;
     overflow: hidden;
-    border-bottom: 1px solid #e5e7eb;
+    background: #f8fafc;
 }
 
-.board-preview img {
+.board-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-.board-info {
-    padding: 15px;
+.board-card:hover .board-image {
+    transform: scale(1.05);
 }
 
-.board-name {
-    color: #1f2937;
-    margin: 0 0 8px 0;
+/* Overlay with Buttons */
+.board-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.board-card:hover .board-overlay {
+    opacity: 1;
+}
+
+.overlay-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.open-btn {
+    background: #10b981;
+    color: white;
+}
+
+.open-btn:hover {
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.delete-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* Board Details */
+.board-details {
+    padding: 20px;
+}
+
+.board-title {
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.board-details {
+.board-meta {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 12px;
+    gap: 6px;
 }
 
-.room-code, .saved-date {
+.room-info, .date-info {
     color: #6b7280;
-    font-size: 12px;
-}
-
-.board-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-open {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
-    flex: 1;
 }
 
-.btn-open:hover {
-    background: #2563eb;
+.room-info {
+    color: #3b82f6;
+    font-weight: 600;
 }
 
-.btn-delete {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    flex: 1;
-}
-
-.btn-delete:hover {
-    background: #dc2626;
+.date-info {
+    color: #9ca3af;
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 60px 40px;
     color: #6b7280;
 }
 
 .empty-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
+    font-size: 64px;
+    margin-bottom: 20px;
     opacity: 0.5;
 }
 
 .empty-state h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
+    margin: 0 0 12px 0;
+    font-size: 20px;
     font-weight: 600;
+    color: #374151;
 }
 
 .empty-state p {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
     opacity: 0.7;
-}
-
-.loading {
-    text-align: center;
-    padding: 50px;
-    font-size: 16px;
-    color: #6b7280;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .header-main {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-    
-    .welcome-section h1 {
-        font-size: 24px;
-    }
-    
-    .actions-row {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .action-card {
+    .saved-section {
         padding: 25px 20px;
     }
     
     .boards-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
     }
     
-    .dashboard-main {
-        padding: 30px 0;
+    .board-image-container {
+        height: 160px;
     }
     
-    .saved-section {
-        padding: 25px 20px;
+    .board-details {
+        padding: 15px;
+    }
+    
+    .overlay-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        min-width: 70px;
     }
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 0 15px;
-    }
-    
-    .action-card {
-        padding: 20px 15px;
-    }
-    
     .boards-grid {
         grid-template-columns: 1fr;
     }
     
-    .board-preview {
-        height: 100px;
+    .board-image-container {
+        height: 150px;
+    }
+    
+    .board-overlay {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .overlay-btn {
+        width: 120px;
     }
 }
