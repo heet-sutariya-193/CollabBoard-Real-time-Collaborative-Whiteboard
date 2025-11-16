@@ -121,11 +121,9 @@ const Dashboard = () => {
                 <div className="container">
                     <div className="actions-row">
                         <div className="action-card create-card">
-                            <div className="card-header">
-                                <div className="card-icon">🎨</div>
-                                <h2>Create New Whiteboard</h2>
-                            </div>
-                            <p>Start a fresh collaborative session with a new whiteboard</p>
+                            <div className="card-icon">🎨</div>
+                            <h2>Create New Whiteboard</h2>
+                            <p>Start a fresh collaborative session</p>
                             <button 
                                 onClick={() => createNewWhiteboard()}
                                 className="btn btn-primary"
@@ -136,22 +134,18 @@ const Dashboard = () => {
                         </div>
 
                         <div className="action-card join-card">
-                            <div className="card-header">
-                                <div className="card-icon">👥</div>
-                                <h2>Join Whiteboard</h2>
-                            </div>
-                            <p>Enter a room code to join an existing session</p>
+                            <div className="card-icon">👥</div>
+                            <h2>Join Whiteboard</h2>
+                            <p>Enter a room code to join a session</p>
                             <form onSubmit={joinWhiteboard} className="join-form">
-                                <div className="form-group">
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        placeholder="Enter room code..."
-                                        value={roomCode}
-                                        onChange={(e) => setRoomCode(e.target.value)}
-                                        required
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Enter room code..."
+                                    value={roomCode}
+                                    onChange={(e) => setRoomCode(e.target.value)}
+                                    required
+                                />
                                 <button type="submit" className="btn btn-secondary">
                                     Join Room
                                 </button>
@@ -162,7 +156,7 @@ const Dashboard = () => {
                     <div className="saved-section">
                         <div className="section-title">
                             <h2>Saved Boards</h2>
-                            <span className="count-badge">{savedBoards.length} saved</span>
+                            <span className="count-badge">{savedBoards.length}</span>
                         </div>
                         
                         {savedBoards.length === 0 ? (
@@ -175,27 +169,27 @@ const Dashboard = () => {
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
                                     <div key={board.id} className="board-card">
-                                        <div className="board-image">
+                                        <div className="board-preview">
                                             <img 
                                                 src={board.thumbnail} 
                                                 alt={board.name}
                                             />
                                         </div>
-                                        <div className="board-content">
-                                            <h4>{board.name}</h4>
-                                            <div className="board-info">
-                                                <span>Room: {board.roomCode}</span>
-                                                <span>Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
+                                        <div className="board-info">
+                                            <h4 className="board-name">{board.name}</h4>
+                                            <div className="board-details">
+                                                <span className="room-code">Room: {board.roomCode}</span>
+                                                <span className="saved-date">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
                                             </div>
-                                            <div className="board-buttons">
+                                            <div className="board-actions">
                                                 <button 
-                                                    className="btn btn-primary btn-small"
+                                                    className="btn-open"
                                                     onClick={() => openSavedBoard(board)}
                                                 >
                                                     Open
                                                 </button>
                                                 <button 
-                                                    className="btn btn-danger btn-small"
+                                                    className="btn-delete"
                                                     onClick={() => deleteSavedBoard(board.id)}
                                                 >
                                                     Delete
