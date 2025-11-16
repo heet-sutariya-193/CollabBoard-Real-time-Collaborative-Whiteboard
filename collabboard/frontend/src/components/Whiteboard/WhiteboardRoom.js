@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { DrawingTool } from '../../classes/DrawingTool';
 import Toolbar from './Toolbar';
@@ -11,6 +11,7 @@ import './WhiteboardRoom.css';
 const WhiteboardRoom = () => {
     const { roomId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [user] = useState(JSON.parse(localStorage.getItem('user')));
     const [drawingTool] = useState(new DrawingTool());
     const [roomUsers, setRoomUsers] = useState([]);
@@ -19,27 +20,28 @@ const WhiteboardRoom = () => {
     const [remoteDrawing, setRemoteDrawing] = useState({});
     const [drawingHistory, setDrawingHistory] = useState([]);
     const [redoHistory, setRedoHistory] = useState([]);
+    const [hasLoadedSavedBoard, setHasLoadedSavedBoard] = useState(false);
     const canvasRef = useRef(null);
 
     // Load saved board if provided
     useEffect(() => {
-        const locationState = window.history.state?.usr;
-        if (locationState?.savedBoard) {
-            const { imageData } = locationState.savedBoard;
+        const savedBoard = location.state?.savedBoard;
+        if (savedBoard && !hasLoadedSavedBoard && canvasRef.current) {
+            const { imageData } = savedBoard;
             // Load the saved image onto canvas
             const img = new Image();
             img.onload = () => {
-                if (canvasRef.current) {
-                    const ctx = canvasRef.current.getContext('2d');
-                    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                    ctx.drawImage(img, 0, 0);
-                    // Save this state to history
-                    saveCanvasState();
-                }
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                ctx.drawImage(img, 0, 0);
+                // Save this state to history
+                saveCanvasState();
+                setHasLoadedSavedBoard(true);
+                addMessage('system', 'Saved board loaded successfully!');
             };
             img.src = imageData;
         }
-    }, []);
+    }, [location.state, hasLoadedSavedBoard]);
 
     useEffect(() => {
         // Connect to Socket.io
