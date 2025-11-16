@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../utils/api';
 import './Auth.css';
 
 const Auth = () => {
@@ -9,20 +10,36 @@ const Auth = () => {
         email: '',
         password: ''
     });
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // For demo purposes, we'll simulate authentication
-        console.log('Auth attempt:', formData);
-        
-        // Simulate successful login
-        localStorage.setItem('user', JSON.stringify({
-            username: formData.username || 'user123',
-            email: formData.email
-        }));
-        
-        navigate('/dashboard');
+        setLoading(true);
+
+        try {
+            const endpoint = isLogin ? '/auth/login' : '/auth/signup';
+            const payload = isLogin 
+                ? { email: formData.email, password: formData.password }
+                : formData;
+
+            const response = await api.post(endpoint, payload);
+            
+            if (response.success) {
+                // Store user data and token
+                localStorage.setItem('token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
+                
+                navigate('/dashboard');
+            } else {
+                alert(response.message || 'Authentication failed');
+            }
+        } catch (error) {
+            console.error('Auth error:', error);
+            alert('Authentication failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleChange = (e) => {
@@ -101,16 +118,21 @@ const Auth = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
+                            minLength="6"
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary auth-btn">
-                        {isLogin ? 'Sign In' : 'Sign Up'}
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary auth-btn"
+                        disabled={loading}
+                    >
+                        {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
                     </button>
                 </form>
 
                 <div className="auth-demo">
-                    <p>For demo: Use any credentials to proceed</p>
+                    <p>Real authentication - Your data will be stored securely</p>
                 </div>
             </div>
         </div>
