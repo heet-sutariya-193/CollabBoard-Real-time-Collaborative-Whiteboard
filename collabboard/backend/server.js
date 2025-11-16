@@ -11,14 +11,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000", "https://your-frontend-url.onrender.com"],
+    origin: ["http://localhost:3000", "https://collabboard-real-time-collaborative-thjg.onrender.com"],
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "https://your-frontend-url.onrender.com"],
+  origin: ["http://localhost:3000", "https://collabboard-real-time-collaborative-thjg.onrender.com"],
   credentials: true
 }));
 app.use(express.json());
@@ -351,3 +351,4 @@ server.listen(PORT, () => {
   console.log(` Authentication: Enabled`);
   console.log(` Storage: ${MONGODB_URI ? 'MongoDB' : 'In-memory'}`);
 });
+
