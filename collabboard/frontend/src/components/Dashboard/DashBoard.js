@@ -89,7 +89,7 @@ const Dashboard = () => {
     };
 
     const openSavedBoard = (board) => {
-        const shouldOpen = window.confirm(`Open board "${board.name}"?`);
+        const shouldOpen = window.confirm(`Open board "${board.name}" with your saved drawing?`);
         if (shouldOpen) {
             createNewWhiteboard(board);
         }
