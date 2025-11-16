@@ -1,222 +1,385 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
-import './Dashboard.css';
+.dashboard {
+    min-height: 100vh;
+    background: #f8fafc;
+}
 
-const Dashboard = () => {
-    const [user, setUser] = useState(null);
-    const [roomCode, setRoomCode] = useState('');
-    const [isCreating, setIsCreating] = useState(false);
-    const [savedBoards, setSavedBoards] = useState([]);
-    const navigate = useNavigate();
+/* Header Styles */
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
-    useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-        } else {
-            navigate('/auth');
-        }
-        loadSavedBoards();
-    }, [navigate]);
+.dashboard-nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
 
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        navigate('/auth');
-    };
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
 
-    const loadSavedBoards = () => {
-        const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
-        setSavedBoards(boards);
-    };
+.user-welcome h1 {
+    font-size: 28px;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
 
-    const createNewWhiteboard = async (savedBoardData = null) => {
-        setIsCreating(true);
-        try {
-            const response = await api.post('/whiteboards/create', {
-                roomName: savedBoardData ? savedBoardData.name : 'My Whiteboard'
-            });
-            
-            if (response.success) {
-                const roomCode = response.roomCode;
-                await api.post(`/whiteboards/${roomCode}/join`, {
-                    username: user?.username || 'Anonymous'
-                });
-                
-                if (savedBoardData) {
-                    navigate(`/whiteboard/${roomCode}`, { 
-                        state: { 
-                            savedBoard: savedBoardData 
-                        } 
-                    });
-                } else {
-                    navigate(`/whiteboard/${roomCode}`);
-                }
-            }
-        } catch (error) {
-            console.error('Error creating whiteboard:', error);
-            alert('Failed to create whiteboard. Please try again.');
-        } finally {
-            setIsCreating(false);
-        }
-    };
+.user-welcome p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
 
-    const joinWhiteboard = async (e) => {
-        e.preventDefault();
-        if (roomCode.trim()) {
-            try {
-                const response = await api.post(`/whiteboards/${roomCode}/join`, {
-                    username: user?.username || 'Anonymous'
-                });
-                
-                if (response.success) {
-                    navigate(`/whiteboard/${roomCode}`);
-                } else {
-                    alert('Room not found. Please check the room code.');
-                }
-            } catch (error) {
-                console.error('Error joining whiteboard:', error);
-                alert('Room not found. Please check the room code.');
-            }
-        }
-    };
+.logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
 
-    const deleteSavedBoard = (boardId) => {
-        const updatedBoards = savedBoards.filter(board => board.id !== boardId);
-        setSavedBoards(updatedBoards);
-        localStorage.setItem('savedBoards', JSON.stringify(updatedBoards));
-    };
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
 
-    const openSavedBoard = (board) => {
-        const shouldOpen = window.confirm(`Open board "${board.name}" with your saved drawing?`);
-        if (shouldOpen) {
-            createNewWhiteboard(board);
-        }
-    };
+/* Main Content */
+.dashboard-main {
+    padding: 40px 0;
+}
 
-    if (!user) {
-        return <div className="loading">Loading...</div>;
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.action-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    border: 1px solid #e5e7eb;
+}
+
+.card-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.action-card h2 {
+    color: #1f2937;
+    margin: 0 0 10px 0;
+    font-size: 22px;
+}
+
+.action-card p {
+    color: #6b7280;
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+}
+
+/* Forms */
+.join-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+    width: 100%;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-2px);
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 14px;
+    width: auto;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* Saved Boards Section */
+.saved-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.section-header h3 {
+    color: #1f2937;
+    margin: 0;
+    font-size: 24px;
+}
+
+.count-badge {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Boards Grid */
+.boards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.board-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.board-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.board-preview {
+    position: relative;
+    height: 160px;
+    background: #f3f4f6;
+    overflow: hidden;
+}
+
+.board-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.board-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.board-preview:hover .board-overlay {
+    opacity: 1;
+}
+
+.btn-preview {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.board-details {
+    padding: 20px;
+}
+
+.board-details h4 {
+    color: #1f2937;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.board-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.board-meta span {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.board-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    color: #6b7280;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.empty-subtitle {
+    font-size: 14px !important;
+    opacity: 0.7;
+}
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #6b7280;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .nav-content {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
     }
+    
+    .user-welcome h1 {
+        font-size: 24px;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .action-card {
+        padding: 25px 20px;
+    }
+    
+    .boards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-main {
+        padding: 30px 0;
+    }
+    
+    .saved-section {
+        padding: 25px 20px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
 
-    return (
-        <div className="dashboard">
-            <header className="dashboard-header">
-                <div className="dashboard-nav">
-                    <div className="nav-content">
-                        <div className="user-welcome">
-                            <h1>Welcome back, {user.username}!</h1>
-                            <p>Start a new whiteboard or continue where you left off</p>
-                        </div>
-                        <button 
-                            onClick={handleLogout}
-                            className="logout-btn"
-                        >
-                            <span className="logout-icon">🚪</span>
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <main className="dashboard-main">
-                <div className="dashboard-container">
-                    <div className="quick-actions">
-                        <div className="action-card">
-                            <div className="card-icon">🎨</div>
-                            <h2>Create New Whiteboard</h2>
-                            <p>Start a fresh collaborative session</p>
-                            <button 
-                                onClick={() => createNewWhiteboard()}
-                                className="btn btn-primary"
-                                disabled={isCreating}
-                            >
-                                {isCreating ? 'Creating...' : '+ New Whiteboard'}
-                            </button>
-                        </div>
-
-                        <div className="action-card">
-                            <div className="card-icon">👥</div>
-                            <h2>Join Whiteboard</h2>
-                            <p>Enter a room code to join a session</p>
-                            <form onSubmit={joinWhiteboard} className="join-form">
-                                <div className="form-group">
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        placeholder="Enter room code..."
-                                        value={roomCode}
-                                        onChange={(e) => setRoomCode(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <button type="submit" className="btn btn-secondary">
-                                    Join Room
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <section className="saved-section">
-                        <div className="section-header">
-                            <h3>Your Saved Boards</h3>
-                            <span className="count-badge">{savedBoards.length}</span>
-                        </div>
-                        
-                        {savedBoards.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-icon">📁</div>
-                                <p>No saved boards yet</p>
-                                <p className="empty-subtitle">Create a whiteboard and save your work to see it here!</p>
-                            </div>
-                        ) : (
-                            <div className="boards-grid">
-                                {savedBoards.map((board) => (
-                                    <div key={board.id} className="board-card">
-                                        <div className="board-preview">
-                                            <img 
-                                                src={board.thumbnail} 
-                                                alt={board.name}
-                                                onClick={() => openSavedBoard(board)}
-                                            />
-                                            <div className="board-overlay">
-                                                <button 
-                                                    className="btn-preview"
-                                                    onClick={() => openSavedBoard(board)}
-                                                >
-                                                    Open
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="board-details">
-                                            <h4>{board.name}</h4>
-                                            <div className="board-meta">
-                                                <span>Room: {board.roomCode}</span>
-                                                <span>Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
-                                            </div>
-                                            <div className="board-actions">
-                                                <button 
-                                                    className="btn btn-small btn-primary"
-                                                    onClick={() => openSavedBoard(board)}
-                                                >
-                                                    Open
-                                                </button>
-                                                <button 
-                                                    className="btn btn-small btn-outline"
-                                                    onClick={() => deleteSavedBoard(board.id)}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
-                </div>
-            </main>
-        </div>
-    );
-};
-
-export default Dashboard;
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 0 15px;
+    }
+    
+    .action-card {
+        padding: 20px 15px;
+    }
+    
+    .board-actions {
+        flex-direction: column;
+    }
+    
+    .btn-small {
+        width: 100%;
+    }
+}
