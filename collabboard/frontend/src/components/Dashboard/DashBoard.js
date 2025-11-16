@@ -30,11 +30,11 @@ const Dashboard = () => {
         setSavedBoards(boards);
     };
 
-    const createNewWhiteboard = async () => {
+    const createNewWhiteboard = async (savedBoardData = null) => {
         setIsCreating(true);
         try {
             const response = await api.post('/whiteboards/create', {
-                roomName: 'My Whiteboard'
+                roomName: savedBoardData ? savedBoardData.name : 'My Whiteboard'
             });
             
             if (response.success) {
@@ -42,7 +42,17 @@ const Dashboard = () => {
                 await api.post(`/whiteboards/${roomCode}/join`, {
                     username: user?.username || 'Anonymous'
                 });
-                navigate(`/whiteboard/${roomCode}`);
+                
+                // If we have saved board data, pass it to the whiteboard room
+                if (savedBoardData) {
+                    navigate(`/whiteboard/${roomCode}`, { 
+                        state: { 
+                            savedBoard: savedBoardData 
+                        } 
+                    });
+                } else {
+                    navigate(`/whiteboard/${roomCode}`);
+                }
             }
         } catch (error) {
             console.error('Error creating whiteboard:', error);
@@ -79,9 +89,9 @@ const Dashboard = () => {
     };
 
     const openSavedBoard = (board) => {
-        const shouldOpen = window.confirm(`Open board "${board.name}" in a new room?`);
+        const shouldOpen = window.confirm(`Open board "${board.name}"?`);
         if (shouldOpen) {
-            createNewWhiteboard();
+            createNewWhiteboard(board);
         }
     };
 
@@ -117,7 +127,7 @@ const Dashboard = () => {
                             <h2>Create New Whiteboard</h2>
                             <p>Start a fresh collaborative session</p>
                             <button 
-                                onClick={createNewWhiteboard}
+                                onClick={() => createNewWhiteboard()}
                                 className="btn btn-primary"
                                 disabled={isCreating}
                             >
