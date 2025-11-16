@@ -101,17 +101,16 @@ const Dashboard = () => {
     return (
         <div className="dashboard">
             <header className="dashboard-header">
-                <div className="dashboard-nav">
-                    <div className="nav-content">
-                        <div className="user-welcome">
-                            <h1>Welcome back, {user.username}!</h1>
+                <div className="header-container">
+                    <div className="header-main">
+                        <div className="welcome-section">
+                            <h1>Welcome, {user.username}!</h1>
                             <p>Start a new whiteboard or continue where you left off</p>
                         </div>
                         <button 
                             onClick={handleLogout}
                             className="logout-btn"
                         >
-                            <span className="logout-icon">🚪</span>
                             Logout
                         </button>
                     </div>
@@ -119,25 +118,29 @@ const Dashboard = () => {
             </header>
 
             <main className="dashboard-main">
-                <div className="dashboard-container">
-                    <div className="quick-actions">
-                        <div className="action-card">
-                            <div className="card-icon">🎨</div>
-                            <h2>Create New Whiteboard</h2>
-                            <p>Start a fresh collaborative session</p>
+                <div className="container">
+                    <div className="actions-row">
+                        <div className="action-card create-card">
+                            <div className="card-header">
+                                <div className="card-icon">🎨</div>
+                                <h2>Create New Whiteboard</h2>
+                            </div>
+                            <p>Start a fresh collaborative session with a new whiteboard</p>
                             <button 
                                 onClick={() => createNewWhiteboard()}
                                 className="btn btn-primary"
                                 disabled={isCreating}
                             >
-                                {isCreating ? 'Creating...' : '+ New Whiteboard'}
+                                {isCreating ? 'Creating...' : 'Create Whiteboard'}
                             </button>
                         </div>
 
-                        <div className="action-card">
-                            <div className="card-icon">👥</div>
-                            <h2>Join Whiteboard</h2>
-                            <p>Enter a room code to join a session</p>
+                        <div className="action-card join-card">
+                            <div className="card-header">
+                                <div className="card-icon">👥</div>
+                                <h2>Join Whiteboard</h2>
+                            </div>
+                            <p>Enter a room code to join an existing session</p>
                             <form onSubmit={joinWhiteboard} className="join-form">
                                 <div className="form-group">
                                     <input
@@ -156,52 +159,43 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <section className="saved-section">
-                        <div className="section-header">
-                            <h3>Your Saved Boards</h3>
-                            <span className="count-badge">{savedBoards.length}</span>
+                    <div className="saved-section">
+                        <div className="section-title">
+                            <h2>Saved Boards</h2>
+                            <span className="count-badge">{savedBoards.length} saved</span>
                         </div>
                         
                         {savedBoards.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-icon">📁</div>
-                                <p>No saved boards yet</p>
-                                <p className="empty-subtitle">Create a whiteboard and save your work to see it here!</p>
+                                <h3>No saved boards yet</h3>
+                                <p>Create a whiteboard and save your work to see it here</p>
                             </div>
                         ) : (
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
                                     <div key={board.id} className="board-card">
-                                        <div className="board-preview">
+                                        <div className="board-image">
                                             <img 
                                                 src={board.thumbnail} 
                                                 alt={board.name}
-                                                onClick={() => openSavedBoard(board)}
                                             />
-                                            <div className="board-overlay">
-                                                <button 
-                                                    className="btn-preview"
-                                                    onClick={() => openSavedBoard(board)}
-                                                >
-                                                    Open
-                                                </button>
-                                            </div>
                                         </div>
-                                        <div className="board-details">
+                                        <div className="board-content">
                                             <h4>{board.name}</h4>
-                                            <div className="board-meta">
+                                            <div className="board-info">
                                                 <span>Room: {board.roomCode}</span>
                                                 <span>Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
                                             </div>
-                                            <div className="board-actions">
+                                            <div className="board-buttons">
                                                 <button 
-                                                    className="btn btn-small btn-primary"
+                                                    className="btn btn-primary btn-small"
                                                     onClick={() => openSavedBoard(board)}
                                                 >
                                                     Open
                                                 </button>
                                                 <button 
-                                                    className="btn btn-small btn-outline"
+                                                    className="btn btn-danger btn-small"
                                                     onClick={() => deleteSavedBoard(board.id)}
                                                 >
                                                     Delete
@@ -212,7 +206,7 @@ const Dashboard = () => {
                                 ))}
                             </div>
                         )}
-                    </section>
+                    </div>
                 </div>
             </main>
         </div>
