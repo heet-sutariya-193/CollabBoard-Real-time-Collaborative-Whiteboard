@@ -43,7 +43,6 @@ const Dashboard = () => {
                     username: user?.username || 'Anonymous'
                 });
                 
-                // If we have saved board data, pass it to the whiteboard room
                 if (savedBoardData) {
                     navigate(`/whiteboard/${roomCode}`, { 
                         state: { 
@@ -96,34 +95,34 @@ const Dashboard = () => {
     };
 
     if (!user) {
-        return <div>Loading...</div>;
+        return <div className="loading">Loading...</div>;
     }
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard">
             <header className="dashboard-header">
-                <div className="container">
-                    <div className="header-content">
-                        <div className="header-left">
+                <div className="dashboard-nav">
+                    <div className="nav-content">
+                        <div className="user-welcome">
                             <h1>Welcome back, {user.username}!</h1>
                             <p>Start a new whiteboard or continue where you left off</p>
                         </div>
-                        <div className="header-right">
-                            <button 
-                                onClick={handleLogout}
-                                className="btn btn-secondary logout-btn"
-                            >
-                                🚪 Logout
-                            </button>
-                        </div>
+                        <button 
+                            onClick={handleLogout}
+                            className="logout-btn"
+                        >
+                            <span className="logout-icon">🚪</span>
+                            Logout
+                        </button>
                     </div>
                 </div>
             </header>
 
-            <div className="dashboard-content">
-                <div className="container">
-                    <div className="action-cards">
+            <main className="dashboard-main">
+                <div className="dashboard-container">
+                    <div className="quick-actions">
                         <div className="action-card">
+                            <div className="card-icon">🎨</div>
                             <h2>Create New Whiteboard</h2>
                             <p>Start a fresh collaborative session</p>
                             <button 
@@ -136,16 +135,13 @@ const Dashboard = () => {
                         </div>
 
                         <div className="action-card">
-                            <h2>Join Existing Whiteboard</h2>
+                            <div className="card-icon">👥</div>
+                            <h2>Join Whiteboard</h2>
                             <p>Enter a room code to join a session</p>
                             <form onSubmit={joinWhiteboard} className="join-form">
                                 <div className="form-group">
-                                    <label htmlFor="roomCode" className="form-label">
-                                        Room Code
-                                    </label>
                                     <input
                                         type="text"
-                                        id="roomCode"
                                         className="form-input"
                                         placeholder="Enter room code..."
                                         value={roomCode}
@@ -154,55 +150,71 @@ const Dashboard = () => {
                                     />
                                 </div>
                                 <button type="submit" className="btn btn-secondary">
-                                    Join Board
+                                    Join Room
                                 </button>
                             </form>
                         </div>
                     </div>
 
-                    <div className="saved-boards">
-                        <h3>Saved Boards ({savedBoards.length})</h3>
+                    <section className="saved-section">
+                        <div className="section-header">
+                            <h3>Your Saved Boards</h3>
+                            <span className="count-badge">{savedBoards.length}</span>
+                        </div>
+                        
                         {savedBoards.length === 0 ? (
                             <div className="empty-state">
-                                <p>No saved boards yet. Create a whiteboard and save your work!</p>
+                                <div className="empty-icon">📁</div>
+                                <p>No saved boards yet</p>
+                                <p className="empty-subtitle">Create a whiteboard and save your work to see it here!</p>
                             </div>
                         ) : (
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
                                     <div key={board.id} className="board-card">
-                                        <div className="board-thumbnail">
+                                        <div className="board-preview">
                                             <img 
                                                 src={board.thumbnail} 
                                                 alt={board.name}
                                                 onClick={() => openSavedBoard(board)}
                                             />
+                                            <div className="board-overlay">
+                                                <button 
+                                                    className="btn-preview"
+                                                    onClick={() => openSavedBoard(board)}
+                                                >
+                                                    Open
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="board-info">
+                                        <div className="board-details">
                                             <h4>{board.name}</h4>
-                                            <p>Room: {board.roomCode}</p>
-                                            <p>Saved: {new Date(board.savedAt).toLocaleDateString()}</p>
-                                        </div>
-                                        <div className="board-actions">
-                                            <button 
-                                                className="btn btn-primary btn-sm"
-                                                onClick={() => openSavedBoard(board)}
-                                            >
-                                                Open
-                                            </button>
-                                            <button 
-                                                className="btn btn-secondary btn-sm"
-                                                onClick={() => deleteSavedBoard(board.id)}
-                                            >
-                                                Delete
-                                            </button>
+                                            <div className="board-meta">
+                                                <span>Room: {board.roomCode}</span>
+                                                <span>Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
+                                            </div>
+                                            <div className="board-actions">
+                                                <button 
+                                                    className="btn btn-small btn-primary"
+                                                    onClick={() => openSavedBoard(board)}
+                                                >
+                                                    Open
+                                                </button>
+                                                <button 
+                                                    className="btn btn-small btn-outline"
+                                                    onClick={() => deleteSavedBoard(board.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </section>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };
