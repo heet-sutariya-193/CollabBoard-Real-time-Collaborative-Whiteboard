@@ -1,8 +1,15 @@
 const API_BASE_URL = 'https://collabboard-real-time-collaborative.onrender.com/api';
 
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
 export const api = {
     async get(endpoint) {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            headers: getAuthHeaders()
+        });
         return response.json();
     },
 
@@ -11,6 +18,7 @@ export const api = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                ...getAuthHeaders()
             },
             body: JSON.stringify(data),
         });
@@ -36,3 +44,4 @@ export const api = {
     }
 
 };
+
