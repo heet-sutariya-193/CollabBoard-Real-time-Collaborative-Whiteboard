@@ -17,7 +17,6 @@ const WhiteboardRoom = () => {
     const [roomUsers, setRoomUsers] = useState([]);
     const [messages, setMessages] = useState([]);
     const [socket, setSocket] = useState(null);
-    const [remoteDrawing, setRemoteDrawing] = useState({});
     const [drawingHistory, setDrawingHistory] = useState([]);
     const [redoHistory, setRedoHistory] = useState([]);
     const [hasLoadedSavedBoard, setHasLoadedSavedBoard] = useState(false);
@@ -28,13 +27,11 @@ const WhiteboardRoom = () => {
         const savedBoard = location.state?.savedBoard;
         if (savedBoard && !hasLoadedSavedBoard && canvasRef.current) {
             const { imageData } = savedBoard;
-            // Load the saved image onto canvas
             const img = new Image();
             img.onload = () => {
                 const ctx = canvasRef.current.getContext('2d');
                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                 ctx.drawImage(img, 0, 0);
-                // Save this state to history
                 saveCanvasState();
                 setHasLoadedSavedBoard(true);
                 addMessage('system', 'Saved board loaded successfully!');
@@ -44,16 +41,13 @@ const WhiteboardRoom = () => {
     }, [location.state, hasLoadedSavedBoard]);
 
     useEffect(() => {
-        // Connect to Socket.io
         const newSocket = io('https://collabboard-real-time-collaborative.onrender.com');
         setSocket(newSocket);
 
-        // Join room
         if (user && roomId) {
             newSocket.emit('join-room', roomId, user.username);
         }
 
-        // Socket event listeners
         newSocket.on('current-users', (users) => {
             setRoomUsers(users);
         });
@@ -69,7 +63,6 @@ const WhiteboardRoom = () => {
         });
 
         newSocket.on('drawing', (data) => {
-            // Handle incoming drawing data from other users
             if (canvasRef.current && data.sender !== user.username) {
                 const ctx = canvasRef.current.getContext('2d');
                 drawRemote(ctx, data);
@@ -77,11 +70,9 @@ const WhiteboardRoom = () => {
         });
 
         newSocket.on('chat-message', (data) => {
-            // Add all messages, including your own (they come back from server)
             addMessage(data.sender, data.text);
         });
 
-        // Set up drawing tool callback for real-time sync
         drawingTool.setOnDraw((drawingData) => {
             if (newSocket && roomId) {
                 newSocket.emit('drawing', {
@@ -91,7 +82,6 @@ const WhiteboardRoom = () => {
             }
         });
 
-        // Save canvas state when drawing ends
         drawingTool.setOnDrawEnd(() => {
             saveCanvasState();
         });
@@ -101,44 +91,34 @@ const WhiteboardRoom = () => {
         };
     }, [user, roomId, drawingTool]);
 
-    // Save current canvas state to history
     const saveCanvasState = () => {
         if (canvasRef.current) {
             const canvas = canvasRef.current;
             const imageData = canvas.toDataURL();
             setDrawingHistory(prev => [...prev, imageData]);
-            setRedoHistory([]); // Clear redo history when new action is performed
+            setRedoHistory([]);
         }
     };
 
-    // Save board to localStorage
     const saveBoard = () => {
         if (canvasRef.current) {
             const canvas = canvasRef.current;
             const imageData = canvas.toDataURL('image/png');
             
-            // Create board data
             const boardData = {
                 id: Date.now().toString(),
                 roomCode: roomId,
                 imageData: imageData,
                 name: `Board-${roomId}-${new Date().toLocaleDateString()}`,
                 savedAt: new Date().toISOString(),
-                thumbnail: imageData // Using same image as thumbnail for simplicity
+                thumbnail: imageData
             };
 
-            // Get existing saved boards
             const savedBoards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
-            
-            // Add new board
             savedBoards.push(boardData);
-            
-            // Save back to localStorage
             localStorage.setItem('savedBoards', JSON.stringify(savedBoards));
             
-            // Show success message
             addMessage('system', 'Board saved successfully!');
-            
             return true;
         }
         return false;
@@ -149,7 +129,6 @@ const WhiteboardRoom = () => {
         navigate('/auth');
     };
 
-    // Undo functionality
     const undo = () => {
         if (drawingHistory.length > 1) {
             const newHistory = [...drawingHistory];
@@ -157,7 +136,6 @@ const WhiteboardRoom = () => {
             setRedoHistory(prev => [currentState, ...prev]);
             setDrawingHistory(newHistory);
             
-            // Restore previous state
             const previousState = newHistory[newHistory.length - 1];
             const img = new Image();
             img.onload = () => {
@@ -167,7 +145,6 @@ const WhiteboardRoom = () => {
             };
             img.src = previousState;
         } else if (drawingHistory.length === 1) {
-            // Clear canvas completely (undo the first action)
             setRedoHistory(prev => [drawingHistory[0], ...prev]);
             setDrawingHistory([]);
             const ctx = canvasRef.current.getContext('2d');
@@ -175,7 +152,6 @@ const WhiteboardRoom = () => {
         }
     };
 
-    // Redo functionality
     const redo = () => {
         if (redoHistory.length > 0) {
             const newRedoHistory = [...redoHistory];
@@ -183,7 +159,6 @@ const WhiteboardRoom = () => {
             setDrawingHistory(prev => [...prev, nextState]);
             setRedoHistory(newRedoHistory);
             
-            // Restore next state
             const img = new Image();
             img.onload = () => {
                 const ctx = canvasRef.current.getContext('2d');
@@ -201,25 +176,20 @@ const WhiteboardRoom = () => {
         ctx.lineWidth = brushSize;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.lineWidth = brushSize;
 
         if (points && points.length >= 2) {
             ctx.beginPath();
 
-            // Draw smooth continuous lines
             if (points.length === 2) {
-                // Single line segment
                 ctx.moveTo(points[0][0], points[0][1]);
                 ctx.lineTo(points[1][0], points[1][1]);
             } else {
-                // Multiple points for smooth curve
                 ctx.moveTo(points[0][0], points[0][1]);
                 for (let i = 1; i < points.length - 2; i++) {
                     const xc = (points[i][0] + points[i + 1][0]) / 2;
                     const yc = (points[i][1] + points[i + 1][1]) / 2;
                     ctx.quadraticCurveTo(points[i][0], points[i][1], xc, yc);
                 }
-                // Curve through the last two points
                 ctx.quadraticCurveTo(
                     points[points.length - 2][0],
                     points[points.length - 2][1],
@@ -245,11 +215,7 @@ const WhiteboardRoom = () => {
     const handleSendMessage = (text) => {
         if (socket && roomId && text.trim()) {
             const messageText = text.trim();
-
-            // Add message immediately for instant feedback
             addMessage(user.username, messageText);
-
-            // Then emit to socket for other users
             socket.emit('chat-message', {
                 roomCode: roomId,
                 sender: user.username,
@@ -287,7 +253,6 @@ const WhiteboardRoom = () => {
         if (canvasRef.current) {
             const ctx = canvasRef.current.getContext('2d');
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            // Save cleared state to history
             saveCanvasState();
         }
     };
@@ -298,27 +263,42 @@ const WhiteboardRoom = () => {
 
     return (
         <div className="whiteboard-room">
-        <header className="whiteboard-header">
-            <div className="header-left">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="btn btn-secondary"
-                >
-                    ← Dashboard
-                </button>
-                <h2>Room: {roomId}</h2>
-            </div>
-            <div className="header-right">
-                <button 
-                    onClick={handleLogout}
-                    className="btn btn-secondary logout-btn"
-                    style={{marginRight: '10px'}}
-                >
-                    🚪 Logout
-                </button>
-                <UserList users={roomUsers} />
-            </div>
-        </header>
+            <header className="whiteboard-header">
+                <div className="header-content">
+                    <div className="header-left">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="back-btn"
+                        >
+                            <span className="back-arrow">←</span>
+                            Dashboard
+                        </button>
+                        <div className="room-info">
+                            <span className="room-label">Room:</span>
+                            <span className="room-code">{roomId}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="header-center">
+                        <div className="active-users">
+                            <span className="users-count">{roomUsers.length}</span>
+                            <span className="users-label">Users Online</span>
+                        </div>
+                    </div>
+
+                    <div className="header-right">
+                        <UserList users={roomUsers} />
+                        <button 
+                            onClick={handleLogout}
+                            className="logout-btn"
+                        >
+                            <span className="logout-icon">🚪</span>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
             <div className="whiteboard-content">
                 <div className="tools-section">
                     <Toolbar
