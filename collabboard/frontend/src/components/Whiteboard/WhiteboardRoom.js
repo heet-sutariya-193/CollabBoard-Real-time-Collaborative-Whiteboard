@@ -122,6 +122,24 @@ const WhiteboardRoom = () => {
         return false;
     };
 
+    const locationState = window.history.state?.usr;
+    if (locationState?.savedBoard) {
+        const { imageData } = locationState.savedBoard;
+        // Load the saved image onto canvas
+        const img = new Image();
+        img.onload = () => {
+            if (canvasRef.current) {
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                ctx.drawImage(img, 0, 0);
+                // Save this state to history
+                saveCanvasState();
+            }
+        };
+        img.src = imageData;
+    }
+    }, []);
+
     const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/auth');
@@ -332,4 +350,5 @@ const WhiteboardRoom = () => {
 
 
 export default WhiteboardRoom;
+
 
