@@ -169,31 +169,32 @@ const Dashboard = () => {
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
                                     <div key={board.id} className="board-card">
-                                        <div className="board-preview">
+                                        <div className="board-image-container">
                                             <img 
                                                 src={board.thumbnail} 
                                                 alt={board.name}
+                                                className="board-image"
                                             />
-                                        </div>
-                                        <div className="board-info">
-                                            <h4 className="board-name">{board.name}</h4>
-                                            <div className="board-details">
-                                                <span className="room-code">Room: {board.roomCode}</span>
-                                                <span className="saved-date">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
-                                            </div>
-                                            <div className="board-actions">
+                                            <div className="board-overlay">
                                                 <button 
-                                                    className="btn-open"
+                                                    className="overlay-btn open-btn"
                                                     onClick={() => openSavedBoard(board)}
                                                 >
                                                     Open
                                                 </button>
                                                 <button 
-                                                    className="btn-delete"
+                                                    className="overlay-btn delete-btn"
                                                     onClick={() => deleteSavedBoard(board.id)}
                                                 >
                                                     Delete
                                                 </button>
+                                            </div>
+                                        </div>
+                                        <div className="board-details">
+                                            <h4 className="board-title">{board.name}</h4>
+                                            <div className="board-meta">
+                                                <span className="room-info">Room: {board.roomCode}</span>
+                                                <span className="date-info">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -208,3 +209,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
