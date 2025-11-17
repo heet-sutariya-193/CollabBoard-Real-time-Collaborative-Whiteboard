@@ -153,7 +153,7 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="saved-section">
+                   <div className="saved-section">
                         <div className="section-title">
                             <h2>Saved Boards</h2>
                             <span className="count-badge">{savedBoards.length}</span>
@@ -169,32 +169,32 @@ const Dashboard = () => {
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
                                     <div key={board.id} className="board-card">
-                                        <div className="board-image-container">
+                                        <div className="board-header">
                                             <img 
                                                 src={board.thumbnail} 
                                                 alt={board.name}
-                                                className="board-image"
+                                                className="board-thumbnail"
                                             />
-                                            <div className="board-overlay">
+                                            <div className="board-actions">
                                                 <button 
-                                                    className="overlay-btn open-btn"
+                                                    className="btn-action btn-open"
                                                     onClick={() => openSavedBoard(board)}
                                                 >
                                                     Open
                                                 </button>
                                                 <button 
-                                                    className="overlay-btn delete-btn"
+                                                    className="btn-action btn-delete"
                                                     onClick={() => deleteSavedBoard(board.id)}
                                                 >
                                                     Delete
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="board-details">
-                                            <h4 className="board-title">{board.name}</h4>
-                                            <div className="board-meta">
-                                                <span className="room-info">Room: {board.roomCode}</span>
-                                                <span className="date-info">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
+                                        <div className="board-content">
+                                            <h4 className="board-name">{board.name}</h4>
+                                            <div className="board-info">
+                                                <span className="info-item">Room: {board.roomCode}</span>
+                                                <span className="info-item">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -209,4 +209,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
