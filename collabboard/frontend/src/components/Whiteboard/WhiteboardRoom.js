@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { DrawingTool } from '../../classes/DrawingTool';
-import { savedBoardsAPI } from '../../utils/api';
 import Toolbar from './Toolbar';
 import Canvas from './Canvas';
 import ChatPanel from './ChatPanel';
@@ -49,7 +48,6 @@ const WhiteboardRoom = () => {
             newSocket.emit('join-room', roomId, user.username);
         }
 
-        // Socket event listeners
         newSocket.on('current-users', (users) => {
             setRoomUsers(users);
         });
@@ -71,48 +69,15 @@ const WhiteboardRoom = () => {
             }
         });
 
-        newSocket.on('canvas-cleared', (data) => {
-            if (canvasRef.current && data.sender !== user.username) {
-                const ctx = canvasRef.current.getContext('2d');
-                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                saveCanvasState();
-                addMessage('system', `${data.sender} cleared the canvas`);
-            }
-        });
-
-        newSocket.on('undo-performed', (data) => {
-            if (data.sender !== user.username) {
-                undo();
-                addMessage('system', `${data.sender} undid an action`);
-            }
-        });
-
-        newSocket.on('redo-performed', (data) => {
-            if (data.sender !== user.username) {
-                redo();
-                addMessage('system', `${data.sender} redid an action`);
-            }
-        });
-
-        newSocket.on('tool-changed', (data) => {
-            if (data.sender !== user.username) {
-                drawingTool.setTool(data.tool);
-                drawingTool.setColor(data.color);
-                drawingTool.setBrushSize(data.brushSize);
-            }
-        });
-
         newSocket.on('chat-message', (data) => {
             addMessage(data.sender, data.text);
         });
 
-        // Set up drawing tool callback for real-time sync
         drawingTool.setOnDraw((drawingData) => {
             if (newSocket && roomId) {
                 newSocket.emit('drawing', {
                     ...drawingData,
-                    roomCode: roomId,
-                    sender: user.username
+                    roomCode: roomId
                 });
             }
         });
@@ -135,46 +100,32 @@ const WhiteboardRoom = () => {
         }
     };
 
-    // Save board to database
-    const saveBoard = async () => {
-        if (canvasRef.current && user) {
+    const saveBoard = () => {
+        if (canvasRef.current) {
             const canvas = canvasRef.current;
             const imageData = canvas.toDataURL('image/png');
             
             const boardData = {
-                userId: user.id,
+                id: Date.now().toString(),
                 roomCode: roomId,
                 imageData: imageData,
                 name: `Board-${roomId}-${new Date().toLocaleDateString()}`,
-                thumbnail: imageData,
-                drawingData: drawingHistory
+                savedAt: new Date().toISOString(),
+                thumbnail: imageData
             };
 
-            try {
-                const response = await savedBoardsAPI.saveBoard(boardData);
-                if (response.success) {
-                    addMessage('system', 'Board saved to cloud successfully!');
-                    return true;
-                }
-            } catch (error) {
-                console.error('Error saving board to database:', error);
-                // Fallback to localStorage
-                const savedBoards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
-                savedBoards.push({
-                    ...boardData,
-                    id: Date.now().toString(),
-                    savedAt: new Date().toISOString()
-                });
-                localStorage.setItem('savedBoards', JSON.stringify(savedBoards));
-                addMessage('system', 'Board saved locally!');
-            }
+            const savedBoards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
+            savedBoards.push(boardData);
+            localStorage.setItem('savedBoards', JSON.stringify(savedBoards));
+            
+            addMessage('system', 'Board saved successfully!');
+            return true;
         }
         return false;
     };
 
     const handleLogout = () => {
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
         navigate('/auth');
     };
 
@@ -193,27 +144,11 @@ const WhiteboardRoom = () => {
                 ctx.drawImage(img, 0, 0);
             };
             img.src = previousState;
-
-            // Emit undo event to other users
-            if (socket) {
-                socket.emit('undo-action', {
-                    roomCode: roomId,
-                    sender: user.username
-                });
-            }
         } else if (drawingHistory.length === 1) {
             setRedoHistory(prev => [drawingHistory[0], ...prev]);
             setDrawingHistory([]);
             const ctx = canvasRef.current.getContext('2d');
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-
-            // Emit undo event to other users
-            if (socket) {
-                socket.emit('undo-action', {
-                    roomCode: roomId,
-                    sender: user.username
-                });
-            }
         }
     };
 
@@ -231,14 +166,6 @@ const WhiteboardRoom = () => {
                 ctx.drawImage(img, 0, 0);
             };
             img.src = nextState;
-
-            // Emit redo event to other users
-            if (socket) {
-                socket.emit('redo-action', {
-                    roomCode: roomId,
-                    sender: user.username
-                });
-            }
         }
     };
 
@@ -323,18 +250,10 @@ const WhiteboardRoom = () => {
     };
 
     const handleClearCanvas = () => {
-        if (canvasRef.current && socket) {
+        if (canvasRef.current) {
             const ctx = canvasRef.current.getContext('2d');
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             saveCanvasState();
-            
-            // Emit clear event to other users
-            socket.emit('clear-canvas', {
-                roomCode: roomId,
-                sender: user.username
-            });
-
-            addMessage('system', 'Canvas cleared');
         }
     };
 
@@ -391,9 +310,6 @@ const WhiteboardRoom = () => {
                         onSave={saveBoard}
                         canUndo={drawingHistory.length > 0}
                         canRedo={redoHistory.length > 0}
-                        socket={socket}
-                        roomId={roomId}
-                        user={user}
                     />
                 </div>
 
