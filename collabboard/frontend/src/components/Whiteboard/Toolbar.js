@@ -39,46 +39,16 @@ const Toolbar = ({ drawingTool, onClear, onExport, onUndo, onRedo, onSave, canUn
     const handleToolChange = (tool) => {
         drawingTool.setTool(tool);
         setCurrentTool(tool);
-
-        if (socket) {
-        socket.emit('tool-change', {
-            roomCode: roomId,
-            tool: tool,
-            color: drawingTool.color,
-            brushSize: drawingTool.brushSize,
-            sender: user.username
-        });
-        }
     };
 
     const handleColorChange = (color) => {
         drawingTool.setColor(color);
         setCurrentColor(color);
-
-        if (socket) {
-        socket.emit('tool-change', {
-            roomCode: roomId,
-            tool: drawingTool.tool,
-            color: color,
-            brushSize: drawingTool.brushSize,
-            sender: user.username
-        });
-        }
     };
 
     const handleBrushSizeChange = (size) => {
         drawingTool.setBrushSize(size);
         setCurrentBrushSize(size);
-
-        if (socket) {
-        socket.emit('tool-change', {
-            roomCode: roomId,
-            tool: drawingTool.tool,
-            color: drawingTool.color,
-            brushSize: size,
-            sender: user.username
-        });
-        }
     };
 
     return (
@@ -199,6 +169,5 @@ const Toolbar = ({ drawingTool, onClear, onExport, onUndo, onRedo, onSave, canUn
         </div>
     );
 };
-
 
 export default Toolbar;
