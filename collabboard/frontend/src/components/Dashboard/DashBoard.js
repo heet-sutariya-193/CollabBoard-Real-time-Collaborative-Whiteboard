@@ -31,11 +31,16 @@ const Dashboard = () => {
     const loadSavedBoards = async (userId) => {
         try {
             setLoading(true);
+            console.log('Loading saved boards for user:', userId);
+            
             const response = await savedBoardsAPI.getSavedBoards(userId);
+            console.log('Saved boards API response:', response);
+            
             if (response.success) {
-                setSavedBoards(response.savedBoards);
+                setSavedBoards(response.savedBoards || []);
             } else {
                 // Fallback to localStorage
+                console.log('Falling back to localStorage');
                 const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
                 setSavedBoards(boards);
             }
@@ -109,6 +114,10 @@ const Dashboard = () => {
             const response = await savedBoardsAPI.deleteBoard(boardId);
             if (response.success) {
                 setSavedBoards(prev => prev.filter(board => board._id !== boardId));
+                // Also remove from localStorage if it exists there
+                const localBoards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
+                const updatedLocalBoards = localBoards.filter(board => board.id !== boardId);
+                localStorage.setItem('savedBoards', JSON.stringify(updatedLocalBoards));
             } else {
                 throw new Error('Failed to delete from database');
             }
@@ -128,6 +137,13 @@ const Dashboard = () => {
         }
     };
 
+    // Refresh saved boards
+    const refreshSavedBoards = () => {
+        if (user) {
+            loadSavedBoards(user.id);
+        }
+    };
+
     if (!user) {
         return <div className="loading">Loading...</div>;
     }
@@ -141,12 +157,21 @@ const Dashboard = () => {
                             <h1>Welcome, {user.username}!</h1>
                             <p>Start a new whiteboard or continue where you left off</p>
                         </div>
-                        <button 
-                            onClick={handleLogout}
-                            className="logout-btn"
-                        >
-                            Logout
-                        </button>
+                        <div className="header-actions">
+                            <button 
+                                onClick={refreshSavedBoards}
+                                className="refresh-btn"
+                                title="Refresh saved boards"
+                            >
+                                🔄 Refresh
+                            </button>
+                            <button 
+                                onClick={handleLogout}
+                                className="logout-btn"
+                            >
+                                Logout
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -188,9 +213,18 @@ const Dashboard = () => {
                     </div>
 
                     <div className="saved-section">
-                        <div className="section-title">
-                            <h2>Saved Boards</h2>
-                            <span className="count-badge">{savedBoards.length}</span>
+                        <div className="section-header">
+                            <div className="section-title">
+                                <h2>Saved Boards</h2>
+                                <span className="count-badge">{savedBoards.length}</span>
+                            </div>
+                            <button 
+                                onClick={refreshSavedBoards}
+                                className="btn-refresh"
+                                disabled={loading}
+                            >
+                                {loading ? '🔄' : '🔄'} Refresh
+                            </button>
                         </div>
                         
                         {loading ? (
@@ -210,9 +244,12 @@ const Dashboard = () => {
                                     <div key={board._id || board.id} className="board-card">
                                         <div className="board-header">
                                             <img 
-                                                src={board.thumbnail} 
+                                                src={board.thumbnail || board.imageData} 
                                                 alt={board.name}
                                                 className="board-thumbnail"
+                                                onError={(e) => {
+                                                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik03NSA1MEgxMjVNODcuNSA1MFYzNy41TTg3LjUgNTBWNjIuNSIgc3Ryb2tlPSIjOEM4QzhDIiBzdHJva2Utd2lkdGg9IjIiLz4KPHN2Zz4K';
+                                                }}
                                             />
                                             <div className="board-actions">
                                                 <button 
@@ -233,7 +270,9 @@ const Dashboard = () => {
                                             <h4 className="board-name">{board.name}</h4>
                                             <div className="board-info">
                                                 <span className="info-item">Room: {board.roomCode}</span>
-                                                <span className="info-item">Saved: {new Date(board.createdAt || board.savedAt).toLocaleDateString()}</span>
+                                                <span className="info-item">
+                                                    Saved: {new Date(board.createdAt || board.savedAt).toLocaleDateString()}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
