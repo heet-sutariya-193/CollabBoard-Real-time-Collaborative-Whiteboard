@@ -61,45 +61,6 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
-// Saved Board Schema
-const savedBoardSchema = new mongoose.Schema({
-  userId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
-  },
-  roomCode: { 
-      type: String, 
-      required: true 
-  },
-  name: { 
-      type: String, 
-      required: true 
-  },
-  imageData: { 
-      type: String, 
-      required: true 
-  },
-  thumbnail: { 
-      type: String, 
-      required: true 
-  },
-  drawingData: {
-      type: Array,
-      default: []
-  },
-  createdAt: { 
-      type: Date, 
-      default: Date.now 
-  },
-  updatedAt: { 
-      type: Date, 
-      default: Date.now 
-  }
-});
-
-const SavedBoard = mongoose.model('SavedBoard', savedBoardSchema);
-
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '7d' });
@@ -339,113 +300,6 @@ app.get('/api/whiteboards/:roomCode', (req, res) => {
   }
 });
 
-// Saved Boards Routes
-app.get('/api/saved-boards/:userId', async (req, res) => {
-  try {
-      const { userId } = req.params;
-      
-      // Validate userId format
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-          return res.status(400).json({
-              success: false,
-              message: 'Invalid user ID format'
-          });
-      }
-
-      const savedBoards = await SavedBoard.find({ userId }).sort({ createdAt: -1 });
-      
-      res.json({
-          success: true,
-          savedBoards
-      });
-  } catch (error) {
-      console.error('Error fetching saved boards:', error);
-      res.status(500).json({
-          success: false,
-          message: 'Error fetching saved boards'
-      });
-  }
-});
-
-app.post('/api/saved-boards', async (req, res) => {
-  try {
-      const { userId, roomCode, name, imageData, thumbnail, drawingData } = req.body;
-      
-      // Validate required fields
-      if (!userId || !roomCode || !name || !imageData || !thumbnail) {
-          return res.status(400).json({
-              success: false,
-              message: 'Missing required fields'
-          });
-      }
-
-      // Validate userId format
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-          return res.status(400).json({
-              success: false,
-              message: 'Invalid user ID format'
-          });
-      }
-
-      const savedBoard = new SavedBoard({
-          userId,
-          roomCode,
-          name,
-          imageData,
-          thumbnail,
-          drawingData: drawingData || []
-      });
-      
-      await savedBoard.save();
-      
-      res.json({
-          success: true,
-          message: 'Board saved successfully',
-          savedBoard
-      });
-  } catch (error) {
-      console.error('Error saving board:', error);
-      res.status(500).json({
-          success: false,
-          message: 'Error saving board'
-      });
-  }
-});
-
-app.delete('/api/saved-boards/:boardId', async (req, res) => {
-  try {
-      const { boardId } = req.params;
-      
-      // Validate boardId format
-      if (!mongoose.Types.ObjectId.isValid(boardId)) {
-          return res.status(400).json({
-              success: false,
-              message: 'Invalid board ID format'
-          });
-      }
-
-      const result = await SavedBoard.findByIdAndDelete(boardId);
-      
-      if (!result) {
-          return res.status(404).json({
-              success: false,
-              message: 'Board not found'
-          });
-      }
-      
-      res.json({
-          success: true,
-          message: 'Board deleted successfully'
-      });
-  } catch (error) {
-      console.error('Error deleting board:', error);
-      res.status(500).json({
-          success: false,
-          message: 'Error deleting board'
-      });
-  }
-});
-
 // Socket.io for real-time collaboration
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
@@ -472,24 +326,12 @@ io.on('connection', (socket) => {
     socket.to(data.roomCode).emit('drawing', data);
   });
 
-  socket.on('clear-canvas', (data) => {
-    io.to(data.roomCode).emit('canvas-cleared', data);
-  });
-
-  socket.on('undo-action', (data) => {
-    socket.to(data.roomCode).emit('undo-performed', data);
-  });
-
-  socket.on('redo-action', (data) => {
-    socket.to(data.roomCode).emit('redo-performed', data);
-  });
-
-  socket.on('tool-change', (data) => {
-    socket.to(data.roomCode).emit('tool-changed', data);
-  });
-
   socket.on('chat-message', (data) => {
     io.to(data.roomCode).emit('chat-message', data);
+  });
+
+  socket.on('clear-canvas', (data) => {
+    io.to(data.roomCode).emit('canvas-cleared');
   });
 
   socket.on('disconnect', () => {
@@ -508,5 +350,5 @@ server.listen(PORT, () => {
   console.log(` API Health check: http://localhost:${PORT}/api/health`);
   console.log(` Authentication: Enabled`);
   console.log(` Storage: ${MONGODB_URI ? 'MongoDB' : 'In-memory'}`);
-  console.log(` Saved Boards: Enabled`);
 });
+
