@@ -42,19 +42,6 @@ export const api = {
         });
         return response.json();
     }
+
 };
 
-// Specific API functions for saved boards
-export const savedBoardsAPI = {
-    async getSavedBoards(userId) {
-        return api.get(`/saved-boards/${userId}`);
-    },
-
-    async saveBoard(boardData) {
-        return api.post('/saved-boards', boardData);
-    },
-
-    async deleteBoard(boardId) {
-        return api.delete(`/saved-boards/${boardId}`);
-    }
-};
