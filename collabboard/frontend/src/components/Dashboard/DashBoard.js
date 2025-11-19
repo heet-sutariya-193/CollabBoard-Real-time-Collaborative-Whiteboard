@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import { api, savedBoardsAPI } from '../../utils/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -8,26 +8,45 @@ const Dashboard = () => {
     const [roomCode, setRoomCode] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [savedBoards, setSavedBoards] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
-            setUser(JSON.parse(userData));
+            const userObj = JSON.parse(userData);
+            setUser(userObj);
+            loadSavedBoards(userObj.id);
         } else {
             navigate('/auth');
         }
-        loadSavedBoards();
     }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
         navigate('/auth');
     };
 
-    const loadSavedBoards = () => {
-        const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
-        setSavedBoards(boards);
+    const loadSavedBoards = async (userId) => {
+        try {
+            setLoading(true);
+            const response = await savedBoardsAPI.getSavedBoards(userId);
+            if (response.success) {
+                setSavedBoards(response.savedBoards);
+            } else {
+                // Fallback to localStorage
+                const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
+                setSavedBoards(boards);
+            }
+        } catch (error) {
+            console.error('Error loading saved boards:', error);
+            // Fallback to localStorage
+            const boards = JSON.parse(localStorage.getItem('savedBoards') || '[]');
+            setSavedBoards(boards);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const createNewWhiteboard = async (savedBoardData = null) => {
@@ -81,10 +100,25 @@ const Dashboard = () => {
         }
     };
 
-    const deleteSavedBoard = (boardId) => {
-        const updatedBoards = savedBoards.filter(board => board.id !== boardId);
-        setSavedBoards(updatedBoards);
-        localStorage.setItem('savedBoards', JSON.stringify(updatedBoards));
+    const deleteSavedBoard = async (boardId) => {
+        const shouldDelete = window.confirm('Are you sure you want to delete this board?');
+        if (!shouldDelete) return;
+
+        try {
+            // Try to delete from database first
+            const response = await savedBoardsAPI.deleteBoard(boardId);
+            if (response.success) {
+                setSavedBoards(prev => prev.filter(board => board._id !== boardId));
+            } else {
+                throw new Error('Failed to delete from database');
+            }
+        } catch (error) {
+            console.error('Error deleting board from database:', error);
+            // Fallback to localStorage
+            const updatedBoards = savedBoards.filter(board => (board._id !== boardId && board.id !== boardId));
+            setSavedBoards(updatedBoards);
+            localStorage.setItem('savedBoards', JSON.stringify(updatedBoards));
+        }
     };
 
     const openSavedBoard = (board) => {
@@ -153,13 +187,18 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                   <div className="saved-section">
+                    <div className="saved-section">
                         <div className="section-title">
                             <h2>Saved Boards</h2>
                             <span className="count-badge">{savedBoards.length}</span>
                         </div>
                         
-                        {savedBoards.length === 0 ? (
+                        {loading ? (
+                            <div className="empty-state">
+                                <div className="loading-spinner"></div>
+                                <p>Loading your boards...</p>
+                            </div>
+                        ) : savedBoards.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-icon">📁</div>
                                 <h3>No saved boards yet</h3>
@@ -168,7 +207,7 @@ const Dashboard = () => {
                         ) : (
                             <div className="boards-grid">
                                 {savedBoards.map((board) => (
-                                    <div key={board.id} className="board-card">
+                                    <div key={board._id || board.id} className="board-card">
                                         <div className="board-header">
                                             <img 
                                                 src={board.thumbnail} 
@@ -184,7 +223,7 @@ const Dashboard = () => {
                                                 </button>
                                                 <button 
                                                     className="btn-action btn-delete"
-                                                    onClick={() => deleteSavedBoard(board.id)}
+                                                    onClick={() => deleteSavedBoard(board._id || board.id)}
                                                 >
                                                     Delete
                                                 </button>
@@ -194,7 +233,7 @@ const Dashboard = () => {
                                             <h4 className="board-name">{board.name}</h4>
                                             <div className="board-info">
                                                 <span className="info-item">Room: {board.roomCode}</span>
-                                                <span className="info-item">Saved: {new Date(board.savedAt).toLocaleDateString()}</span>
+                                                <span className="info-item">Saved: {new Date(board.createdAt || board.savedAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -209,5 +248,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
